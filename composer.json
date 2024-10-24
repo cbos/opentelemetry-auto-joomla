@@ -1,5 +1,5 @@
 {
-  "name": "cbos/opentelemetry-auto-wordpress",
+  "name": "cbos/opentelemetry-auto-joomla",
   "description": "OpenTelemetry auto-instrumentation for Joomla",
   "keywords": ["opentelemetry", "otel", "open-telemetry", "tracing", "joomla", "instrumentation"],
   "type": "library",

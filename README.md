@@ -9,13 +9,13 @@ install and configure the extension and SDK.
 
 * OpenTelemetry extension
 * OpenTelemetry SDK + exporter (required to actually export traces)
-* WordPress installation
+* Joomla installation
 * OpenTelemetry [SDK Autoloading](https://github.com/open-telemetry/opentelemetry-php/blob/main/examples/autoload_sdk.php) configured
 
 ## Overview
-OpenTelemetry depends on composer, unlike Wordpress. This extension was developed against Joomla docker
+OpenTelemetry depends on composer. This extension was developed against Joomla docker
 
-An example in Docker of extending the official Wordpress image to enable
+An example in Docker of extending the official Joomla image to enable
 auto-instrumentation: [example](example/)
 
 ### apache
@@ -26,7 +26,7 @@ Configure (eg via `.htaccess`) a PHP prepend file to initialize composer:
 php_value auto_prepend_file /var/www/vendor/autoload.php
 ```
 
-This will install the composer autoloader before running Wordpress. As part of composer autoloading,
+This will install the composer autoloader before running Joomla. As part of composer autoloading,
 scripts are executed for installed modules, importantly:
 * OpenTelemetry SDK Autoloader
 * this library's `_register.php` file
