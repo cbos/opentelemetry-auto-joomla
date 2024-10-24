@@ -1,0 +1,26 @@
+{
+  "name": "cbos/opentelemetry-auto-wordpress",
+  "description": "OpenTelemetry auto-instrumentation for Joomla",
+  "keywords": ["opentelemetry", "otel", "open-telemetry", "tracing", "joomla", "instrumentation"],
+  "type": "library",
+  "homepage": "https://opentelemetry.io/docs/php",
+  "readme": "./README.md",
+  "license": "Apache-2.0",
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^8.0",
+    "ext-opentelemetry": "*",
+    "open-telemetry/api": "^1.0",
+    "open-telemetry/sem-conv": "^1.24",
+    "nyholm/psr7": "^1",
+    "nyholm/psr7-server": "^1"
+  },
+  "autoload": {
+    "psr-4": {
+      "OpenTelemetry\\Contrib\\Instrumentation\\Joomla\\": "src/"
+    },
+    "files": [
+      "_register.php"
+    ]
+  }
+}
