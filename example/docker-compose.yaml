@@ -1,0 +1,66 @@
+name: joomla-auto-instrument-example
+services:
+  joomla:
+    build:
+      context: ..
+      dockerfile: example/Dockerfile
+    restart: unless-stopped
+    ports:
+      - 3500:80
+    environment:
+      JOOMLA_DB_HOST: db
+      JOOMLA_DB_USER: joomla
+      JOOMLA_DB_PASSWORD: examplepass
+      JOOMLA_DB_NAME: joomla_db
+      JOOMLA_SITE_NAME: Joomla
+      JOOMLA_ADMIN_USER: Joomla Hero
+      JOOMLA_ADMIN_USERNAME: joomla
+      JOOMLA_ADMIN_PASSWORD: joomla@secured
+      JOOMLA_ADMIN_EMAIL: joomla@example.com
+      OTEL_PHP_AUTOLOAD_ENABLED: true
+      OTEL_SERVICE_NAME: "website-joomla"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_EXPORTER_OTLP_INSECURE: true
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_PROPAGATORS: "baggage,tracecontext"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=development,service.version=1.0.0"
+    volumes:
+      - joomla_data:/var/www/html
+    networks:
+      - joomla_network
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    deploy:
+      resources:
+        limits:
+          memory: 125M
+    restart: unless-stopped
+    command: [ "--config=/etc/otelcol-config.yml" ]
+    volumes:
+      - ./otel-config.yml:/etc/otelcol-config.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - joomla_network
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: joomla_db
+      MYSQL_USER: joomla
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - joomla_network
+
+volumes:
+  joomla_data:
+  db_data:
+
+networks:
+  joomla_network:

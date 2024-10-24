@@ -1,0 +1,39 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: otel-collector:4317 # Using the service name from your Docker compose file
+      http:
+        endpoint: otel-collector:4318 # Using the service name from your Docker compose file
+
+processors:
+  batch:
+
+exporters:
+  # Running Observability toolkit at host level: https://github.com/cbos/observability-toolkit
+  otlp/observabilitytoolkit:
+    endpoint: "host.docker.internal:4317"  # for docker
+    #    endpoint: "host.containers.internal:4317" # for podman
+    tls:
+      insecure: true
+
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors:
+        - batch
+      exporters: [ otlp/observabilitytoolkit ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/observabilitytoolkit ]
+    logs:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/observabilitytoolkit ]

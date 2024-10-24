@@ -1,0 +1,17 @@
+{
+  "name": "opentelemetry/joomla-example",
+  "description": "An example of autoinstrumentation of Joomla with the official Joomla docker image",
+  "type": "project",
+  "minimum-stability": "beta",
+  "require": {
+    "open-telemetry/sdk": "^1.0",
+    "open-telemetry/exporter-otlp": "^1.0",
+    "open-telemetry/opentelemetry-auto-io": "^0.0.12",
+    "cbos/opentelemetry-auto-joomla": "*@dev"
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
+  }
+}
