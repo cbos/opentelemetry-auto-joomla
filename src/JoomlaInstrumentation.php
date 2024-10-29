@@ -55,7 +55,10 @@ class JoomlaInstrumentation
             }
         }
 
-        //CMSApplication execute method execute once and initiates all actions and plugins
+        self::_hook($instrumentation, 'Joomla\Platform\JController', 'execute', 'DEPRECATED Joomla.JController.package.execute', SpanKind::KIND_INTERNAL);
+        self::_hook($instrumentation, 'JController', 'execute', 'DEPRECATED Joomla.JController.execute', SpanKind::KIND_INTERNAL);
+
+
         //WebApplicationInterface execute method execute once and initiates all actions and plugins
         hook(
             class: 'Joomla\Application\WebApplicationInterface',
