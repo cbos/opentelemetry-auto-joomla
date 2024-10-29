@@ -91,17 +91,20 @@ class JoomlaInstrumentation
             }
         );
 
+
         /**
-         * Create a span for every db query. This can get noisy, so could be turned off via config?
+         * Controller execute registration
          */
         hook(
-            class: 'Joomla\Database\DatabaseInterface',
+            class: 'Joomla\CMS\MVC\Controller\ControllerInterface',
             function: 'execute',
             pre: static function ($object, ?array $params, ?string $class, ?string $function, ?string $filename, ?int $lineno) use ($instrumentation) {
-                $span = self::builder($instrumentation, 'Joomla.database.execute', $function, $class, $filename, $lineno)
-                    ->setSpanKind(SpanKind::KIND_CLIENT)
-                    ->setAttribute(TraceAttributes::DB_STATEMENT, $object->getQuery(false)->__toString())
-                    ->setAttribute(TraceAttributes::DB_SYSTEM, $object->getServerType())
+                $task = $params[0] ?? 'undefined';
+                $controllerName = get_class($object);
+
+                $span = self::builder($instrumentation, $controllerName, $function, $class, $filename, $lineno)
+                    ->setSpanKind(SpanKind::KIND_INTERNAL)
+                    ->setAttribute("joomla.controller.task", $task)
                     ->startSpan();
                 Context::storage()->attach($span->storeInContext(Context::getCurrent()));
             },
@@ -109,6 +112,7 @@ class JoomlaInstrumentation
                 self::end($exception);
             }
         );
+
         if (Sdk::isInstrumentationDisabled(JoomlaInstrumentation::NAME . "-db")  === false) {
             /**
              * Create a span for every db query. This can get noisy, so could be turned off via config?
