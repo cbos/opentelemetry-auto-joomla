@@ -43,7 +43,7 @@ class JoomlaInstrumentation
                         $name = $object->getName();
 
                         $span = self::builder($instrumentation, $name . ' ' . $function, $function, $class, $filename, $lineno)
-                            ->setSpanKind(SpanKind::KIND_CLIENT)
+                            ->setSpanKind(SpanKind::KIND_INTERNAL)
                             ->startSpan();
                         Context::storage()->attach($span->storeInContext(Context::getCurrent()));
                     },
