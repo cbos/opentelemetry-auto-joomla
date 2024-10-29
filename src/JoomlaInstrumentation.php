@@ -14,6 +14,7 @@ use OpenTelemetry\API\Trace\SpanKind;
 use OpenTelemetry\API\Trace\StatusCode;
 use OpenTelemetry\Context\Context;
 use function OpenTelemetry\Instrumentation\hook;
+use OpenTelemetry\SDK\Sdk;
 use OpenTelemetry\SemConv\TraceAttributes;
 use Throwable;
 
@@ -108,6 +109,26 @@ class JoomlaInstrumentation
                 self::end($exception);
             }
         );
+        if (Sdk::isInstrumentationDisabled(JoomlaInstrumentation::NAME . "-db")  === false) {
+            /**
+             * Create a span for every db query. This can get noisy, so could be turned off via config?
+             */
+            hook(
+                class: 'Joomla\Database\DatabaseInterface',
+                function: 'execute',
+                pre: static function ($object, ?array $params, ?string $class, ?string $function, ?string $filename, ?int $lineno) use ($instrumentation) {
+                    $span = self::builder($instrumentation, 'db.execute', $function, $class, $filename, $lineno)
+                        ->setSpanKind(SpanKind::KIND_CLIENT)
+                        ->setAttribute(TraceAttributes::DB_STATEMENT, $object->getQuery(false)->__toString())
+                        ->setAttribute(TraceAttributes::DB_SYSTEM, $object->getServerType())
+                        ->startSpan();
+                    Context::storage()->attach($span->storeInContext(Context::getCurrent()));
+                },
+                post: static function ($object, ?array $params, mixed $return, ?Throwable $exception) {
+                    self::end($exception);
+                }
+            );
+        }
     }
 
     /**

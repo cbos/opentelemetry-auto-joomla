@@ -24,6 +24,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
       OTEL_PROPAGATORS: "baggage,tracecontext"
       OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=development,service.version=1.0.0"
+      # OTEL_PHP_DISABLED_INSTRUMENTATIONS: "joomla-db"
     volumes:
       - joomla_data:/var/www/html
     networks:
