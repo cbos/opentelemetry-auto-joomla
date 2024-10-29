@@ -48,8 +48,9 @@ class JoomlaInstrumentation
 
 
         //CMSApplication execute method execute once and initiates all actions and plugins
+        //WebApplicationInterface execute method execute once and initiates all actions and plugins
         hook(
-            class: 'Joomla\CMS\Application\CMSApplication',
+            class: 'Joomla\Application\WebApplicationInterface',
             function: 'execute',
             pre: static function ($object, ?array $params, ?string $class, ?string $function, ?string $filename, ?int $lineno) use ($instrumentation) {
                 $factory = new Psr17Factory();
@@ -81,12 +82,7 @@ class JoomlaInstrumentation
                 }
                 $span = Span::fromContext($scope->context());
 
-                foreach ($object->getHeaders() as $header) {
-                    if ('status' == strtolower($header['name'])) {
-                        $status = (int)$header['value'];
-                        $span->setAttribute(TraceAttributes::HTTP_RESPONSE_STATUS_CODE, $status);
-                    }
-                }
+                $span->setAttribute(TraceAttributes::HTTP_RESPONSE_STATUS_CODE, $object->getResponse()->getStatusCode());
                 self::end($exception);
             }
         );
