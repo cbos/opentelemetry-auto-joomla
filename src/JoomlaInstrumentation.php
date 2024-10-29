@@ -30,22 +30,30 @@ class JoomlaInstrumentation
             'https://opentelemetry.io/schemas/1.24.0'
         );
 
-        self::_hook($instrumentation, 'Joomla\CMS\Application\SiteApplication', 'execute', 'Joomla.SiteApplication.execute', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\SiteApplication', 'doExecute', 'Joomla.SiteApplication.doExecute', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\SiteApplication', 'render', 'Joomla.SiteApplication.render', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\SiteApplication', 'route', 'Joomla.SiteApplication.route', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\SiteApplication', 'dispatch', 'Joomla.SiteApplication.dispatch', SpanKind::KIND_INTERNAL);
+        $apps = array("Joomla\CMS\Application\CMSApplication"); // For all subclasses of CMSApplication like SiteApplication, AdministratorApplication and ApiApplication
+        $app_methods = array("doExecute", "render", "route", "dispatch", "respond");
 
-        self::_hook($instrumentation, 'Joomla\CMS\Application\AdministratorApplication', 'execute', 'Joomla.AdministratorApplication.execute', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\AdministratorApplication', 'doExecute', 'Joomla.AdministratorApplication.doExecute', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\AdministratorApplication', 'render', 'Joomla.AdministratorApplication.render', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\AdministratorApplication', 'route', 'Joomla.AdministratorApplication.route', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\AdministratorApplication', 'dispatch', 'Joomla.AdministratorApplication.dispatch', SpanKind::KIND_INTERNAL);
+        foreach ($apps as $appClass) {
+            foreach ($app_methods as $method) {
 
-        //self::_hook($instrumentation, 'Joomla\CMS\Application\CMSApplication', 'execute', 'Joomla.CMSApplication.execute', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\CMSApplication', 'render', 'Joomla.CMSApplication.render', SpanKind::KIND_INTERNAL);
-        self::_hook($instrumentation, 'Joomla\CMS\Application\CMSApplication', 'respond', 'Joomla.CMSApplication.respond', SpanKind::KIND_INTERNAL);
+                hook(
+                    class: $appClass,
+                    function: $method,
+                    pre: static function ($object, ?array $params, ?string $class, ?string $function, ?string $filename, ?int $lineno) use ($instrumentation) {
+                        $name = $object->getName();
 
+                        $span = self::builder($instrumentation, $name . ' ' . $function, $function, $class, $filename, $lineno)
+                            ->setSpanKind(SpanKind::KIND_CLIENT)
+                            ->startSpan();
+                        Context::storage()->attach($span->storeInContext(Context::getCurrent()));
+                    },
+                    post: static function ($object, ?array $params, mixed $return, ?Throwable $exception) {
+                        self::end($exception);
+                    }
+                );
+
+            }
+        }
 
         //CMSApplication execute method execute once and initiates all actions and plugins
         //WebApplicationInterface execute method execute once and initiates all actions and plugins
