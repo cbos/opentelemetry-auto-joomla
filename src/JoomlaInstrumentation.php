@@ -120,6 +120,27 @@ class JoomlaInstrumentation
             }
         );
 
+        /**
+         * HtmlView rendering
+         */
+        hook(
+            class: 'Joomla\CMS\MVC\View\HtmlView',
+            function: 'display',
+            pre: static function ($object, ?array $params, ?string $class, ?string $function, ?string $filename, ?int $lineno) use ($instrumentation) {
+                $template = $params[0] ?? 'undefined';
+                $viewName = get_class($object);
+
+                $span = self::builder($instrumentation, $viewName, $function, $class, $filename, $lineno)
+                    ->setSpanKind(SpanKind::KIND_INTERNAL)
+                    ->setAttribute("joomla.view.template", $template)
+                    ->startSpan();
+                Context::storage()->attach($span->storeInContext(Context::getCurrent()));
+            },
+            post: static function ($object, ?array $params, mixed $return, ?Throwable $exception) {
+                self::end($exception);
+            }
+        );
+
         if (Sdk::isInstrumentationDisabled(JoomlaInstrumentation::NAME . "-db")  === false) {
             /**
              * Create a span for every db query. This can get noisy, so could be turned off via config?
